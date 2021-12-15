@@ -9,12 +9,14 @@ if (isset($_POST['upload'])) {
 
 	$filename = $_FILES["uploadfile"]["name"];
 	$tempname = $_FILES["uploadfile"]["tmp_name"];	
-		$folder = "banners/".$filename;
-		
+		$folder = "images/".$filename;
+	$status="2";	
+	$name="name";
+	$link="link";
 	$db = mysqli_connect("localhost", "root", "", "dtech");
 
 		// Get all the submitted data from the form
-		$sql = "INSERT INTO banner (image) VALUES ('$filename')";
+		$sql = "INSERT INTO banner (name,link,status,filename) VALUES ('$name','$link','$status','$filename')";
 
 		// Execute query
 		mysqli_query($db, $sql);
@@ -26,7 +28,7 @@ if (isset($_POST['upload'])) {
 			$msg = "Failed to upload image";
 	}
 }
-$result = mysqli_query($db, "SELECT image FROM banner");
+$result = mysqli_query($db, "SELECT * FROM image");
 while($data = mysqli_fetch_array($result))
 {
 

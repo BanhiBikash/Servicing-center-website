@@ -71,47 +71,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
                 } 
 				else
 				{
-                    $sql="INSERT INTO banner (name,link,status) VALUES (?,?,?)";
 
-                    if($stmt = mysqli_prepare($conn, $sql))
-                    {
-                        // Bind variables to the prepared statement as parameters
-                        mysqli_stmt_bind_param($stmt, "sss", $param_name, $param_link,$param_status);
+                    $filename = $_FILES["banner"]["name"];
+                    $tempname = $_FILES["banner"]["tmp_name"];	
+                        $folder = "banners/".$filename;
+                
+                        // Insert data into form
+                        $sql = "INSERT INTO banner (name,link,status,filename) VALUES ('$name','$link','$status','$filename')";
+                
+                        // Execute query
+                        mysqli_query($conn, $sql);
                         
-                        // Set parameters
-                        $param_name = $name;
-                        $param_link = $link;
-                        $param_status=$status; 
-                        // Attempt to execute the prepared statement
-                        if(mysqli_stmt_execute($stmt))
-                        {
-                            // show confirmation
-                            echo"New banner added";
-
-                            $filename = $_FILES["banner"]["name"];
-                            $tempname = $_FILES["banner"]["tmp_name"];	
-                                $folder = "banners/".$filename;
-                        
-                                // submitting data into the form
-                                $sql = "INSERT INTO banner (image) VALUES ('$filename')";
-                        
-                                // Execute query
-                                mysqli_query($conn, $sql);
-                                
-                                //moving the uploaded image into the folder: banners
-                                if (move_uploaded_file($tempname, $folder)) {
-                                    $msg = "Banner uploaded successfully";
-                                }else{
-                                    $msg = "Failed to upload Banner";
-                            }
-                        } 
-                        
-                        else
-                        {
-                            echo "Failed to add Banner.";
-                        }
-        
+                        // move the uploaded image into the folder: banner
+                        if (move_uploaded_file($tempname, $folder)) {
+                            $msg = "Image uploaded successfully";
+                        }else{
+                            $msg = "Failed to upload image";
                     }
+
+                    echo $msg;
                 }
             }
 			else
