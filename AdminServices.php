@@ -1,3 +1,98 @@
+<?php
+    require_once 'config.php';
+
+     
+// Define variables and initialize with empty values
+$name=$status ="";
+$name_err=$status_err= $image_err="";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST")
+{
+    if(empty($_FILES["service-image"]["name"]))
+    {
+        $image_err="Enter a image";
+    }
+
+    // Check if name is empty
+    if(empty(trim($_POST["title"])))
+	{
+        $name_err = "Please enter title.";
+    } 
+	else
+	{
+        $name = trim($_POST["title"]);
+    }
+    
+     // Check if status is empty
+    if(empty(trim($_POST["status"])))
+	{
+        $status_err = "Please enter status.";
+    } 
+	else
+	{
+        $status = trim($_POST["status"]);
+    }
+   
+    // Validate credentials
+    if(empty($name_err) && empty($status_err) && empty($image_err))
+	{           
+        // Prepare a select statement
+        $sql = "SELECT name FROM service WHERE name = ?";
+        
+        if($stmt = mysqli_prepare($conn, $sql))
+		{
+            // Bind variables to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "s", $param_name);
+            
+            // Set parameters
+            $param_name = $name;
+            
+            // Attempt to execute the prepared statement
+            if(mysqli_stmt_execute($stmt))
+			{
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
+                // Check if name exists, if yes then ask for diffrent name
+                if(mysqli_stmt_num_rows($stmt) == 1)
+				{  
+                    $name_err="This banner name already exists.";
+                } 
+				else
+				{
+
+                    $filename = $_FILES["service-image"]["name"];
+                    $tempname = $_FILES["service-image"]["tmp_name"];	
+                        $folder = "Service Images/".$filename;
+                
+                        // Insert data into form
+                        $sql = "INSERT INTO service (name,status,filename) VALUES ('$name','$status','$filename')";
+                
+                        // Execute query
+                        if ( mysqli_query($conn, $sql)) {
+                            $msg = "Service uploaded successfully";
+                        }else{
+                            $msg = "Failed to upload Service";
+                    }
+
+                    // move the uploaded image into the folder: Service Images
+                    move_uploaded_file($tempname, $folder);
+                    echo $msg;
+                }
+            }
+			else
+			{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
+
+        }
+    }
+}   
+    // Close connection
+    mysqli_close($conn);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,28 +178,26 @@
                     ADD NEW SERVICE
                 </h>
 
-                    <form action="#" class="content">
+                    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data" class="content">
                         <div class="input-group">
-                            <input id="choose-service" type="file" name="banner">
-                            <pre class="error-message"></pre>
+                            <input id="choose-service" type="file" name="service-image">
+                            <pre class="error-message"><?php echo $image_err ?></pre>
                         </div>
                         
                         <pre id="photo-requirement">**Size:Width 1000px to 600px</pre>
 
                         <div class="input-group">
                             <input type="text" name="title" placeholder="Service Title">
-                            <pre class="error-message"></pre>
+                            <pre class="error-message"><?php echo $name_err ?></pre>
                         </div>
 
                         <div class="input-group">
-                            <select name="options">
-                                <option >Select</option>
-                                <option value="Value 1">Option 1</option>
-                                <option value="Value 2">Option 2</option>
-                                <option value="Value 3">Option 3</option>
-                                <option value="Value 4">Option 4</option>
+                            <select name="status">
+                                <option>Select</option>
+                                <option value="On-going">On-going</option>
+                                <option value="Up-coming">Up-coming</option>
                             </select>
-                            <pre class="error-message"></pre>
+                            <pre class="error-message"><?php echo $status_err ?></pre>
                         </div>
 
                         <input type="submit" id="submit" value="UPLOAD">
